@@ -1,7 +1,7 @@
 #! /bin/sh
 
 
-RUNNINGDIR=/mnt/data
+RUNNINGROOTDIR=/mnt/data
 ROOTDIR=$(pwd)
 PODROOTDIR=$ROOTDIR/pods
 PODSTOPPED=0
@@ -15,7 +15,13 @@ check_for_updates() {
         elif [ -f "$i" ]; then	    
             GIT_FILE_ABSOLUTE=$i
             GIT_FILE_RELATIVE=$(realpath --relative-to=$PODROOTDIR $i)
-            if cmp -s "$GIT_FILE_ABSOLUTE" "$RUNNINGDIR/$GIT_FILE_RELATIVE"; then
+            RUNNINGFILE=$RUNNINGROOTDIR/$GIT_FILE_RELATIVE
+            RUNNINGDIR=$RUNNINGROOTDIR/$RELATIVEDIR
+            mkdir -p $RUNNINGDIR
+	    if [ ! -f $RUNNINGFILE ]; then
+              touch $RUNNINGFILE
+            fi	    
+            if cmp -s "$GIT_FILE_ABSOLUTE" "$RUNNINGFILE"; then
               printf "."
             else   
               echo $GIT_FILE_ABSOLUTE
@@ -26,7 +32,7 @@ check_for_updates() {
                 PODSTOPPED=1
 	      fi
 	      echo "Updating $GIT_FILE_RELATIVE"
-              cp -f $GIT_FILE_ABSOLUTE $RUNNINGDIR/$GIT_FILE_RELATIVE
+              cp -f $GIT_FILE_ABSOLUTE $RUNNINGFILE
             fi
         fi
     done
