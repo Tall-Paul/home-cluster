@@ -3,9 +3,6 @@ Config files etc for provisioning home cluster
 
 NOTE: THIS IS ALL INCREDIBLY INSECURE, DON'T USE ANY OF THIS IN PRODUCTION ETC ETC
 
-OS install
-  - ansible? terraform?
-
 Main file share setup (zfs, samba)
 
 kubernetes install (kubeadm)
