@@ -1,15 +1,15 @@
 scrape_configs:
-  #- job_name: 'snmp_hp_procurve'
-  #  scrape_interval: 300s
-  #  scrape_timeout: 60s
-  #  static_configs:
-  #    - targets: ['snmp-exporter']
-  #      labels:
-  #        instance: "procurve"
-  #  metrics_path: '/snmp'
-  #  params:
-  #    target: ['192.168.100.150']
-  #    module: ['if_mib']
+  - job_name: 'snmp_hp_procurve'
+    scrape_interval: 120s
+    scrape_timeout: 30s
+    static_configs:
+      - targets: ['snmp-exporter']
+        labels:
+          instance: "procurve"
+    metrics_path: '/snmp'
+    params:
+      target: ['192.168.100.150']
+      module: ['if_mib']
   - job_name: 'gluster'
     scrape_interval: 30s
     static_configs:

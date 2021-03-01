@@ -1,0 +1,96 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: snmp-exporter-container
+
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: snmp-exporter
+  labels:
+    app: snmp-exporter
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: snmp-exporter
+  template:
+    metadata:
+      labels:
+        app: snmp-exporter
+    spec:
+      serviceAccountName: snmp-exporter-container
+      containers:
+        - name: snmp-exporter
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          imagePullPolicy: IfNotPresent
+          image: prom/snmp-exporter:latest
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+          ports:
+            - name: web
+              containerPort: 9116
+          volumeMounts:
+            - name: data
+              mountPath: /etc/snmp_exporter
+        - name: metrics
+          imagePullPolicy: IfNotPresent
+          image: quay.io/prometheus/node-exporter:latest
+          ports:
+            - name: metrics
+              containerPort: 9100
+      volumes:
+        - name: data
+          glusterfs:
+            endpoints: glusterfs-cluster
+            path: data/snmp-exporter
+            readOnly: false
+      dnsPolicy: "ClusterFirst"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snmp-exporter
+spec:
+  type: ClusterIP
+  selector:
+    app: snmp-exporter
+  ports:
+    - protocol: TCP
+      port: 9116
+      name: web
+      targetPort: 9116
+    - protocol: TCP
+      port: 9100
+      name: metrics
+      targetPort: 9100
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: snmp-exporter-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: kong
+spec:
+  rules:
+  - host: snmp-exporter.home
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: snmp-exporter
+            port:
+              number: 9116
