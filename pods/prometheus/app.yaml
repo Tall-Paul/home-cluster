@@ -123,4 +123,4 @@ spec:
           service:
             name: prometheus
             port:
-              number: web
+              number: 9090
