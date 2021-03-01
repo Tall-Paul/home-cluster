@@ -1,0 +1,126 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - services
+  - endpoints
+  - pods
+  - nodes/metrics
+  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses
+  verbs: ["get", "list", "watch"]
+- nonResourceURLs:
+  - "/metrics"
+  verbs:
+    - get
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus-container
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+- kind: ServiceAccount
+  name: prometheus-container
+  namespace: default
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: prometheus
+  labels:
+    app: prometheus
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      serviceAccountName: prometheus-container
+      containers:
+        - name: prometheus
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          imagePullPolicy: IfNotPresent
+          image: bitnami/prometheus:latest
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+          ports:
+            - name: web
+              containerPort: 9090
+          volumeMounts:
+            - name: data
+              mountPath: /opt/bitnami/prometheus/data
+            - name: config            
+              mountPath: /opt/bitnami/prometheus/conf/
+      volumes:
+        - name: data
+          glusterfs:
+            endpoints: glusterfs-cluster
+            path: data/prometheus/data
+            readOnly: false          
+        - name: config
+          glusterfs:
+            endpoints: glusterfs-cluster
+            path: data/prometheus/config
+            readOnly: false
+      dnsPolicy: "ClusterFirst"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+spec:
+  type: ClusterIP
+  selector:
+    app: prometheus
+  ports:
+    - protocol: TCP
+      port: 9090
+      name: web
+      targetPort: 9090
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: kong
+spec:
+  rules:
+  - host: prometheus.home
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: prometheus
+            port:
+              number: web

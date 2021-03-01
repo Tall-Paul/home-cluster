@@ -1,0 +1,115 @@
+scrape_configs:
+  #- job_name: 'snmp_hp_procurve'
+  #  scrape_interval: 300s
+  #  scrape_timeout: 60s
+  #  static_configs:
+  #    - targets: ['snmp-exporter']
+  #      labels:
+  #        instance: "procurve"
+  #  metrics_path: '/snmp'
+  #  params:
+  #    target: ['192.168.100.150']
+  #    module: ['if_mib']
+  - job_name: 'gluster'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['k8s-primary.home:9713']
+    metrics_path: /clustermetrics
+  - job_name: 'node'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['k8s-primary.home:9100','k8s-worker2:9100','router.home:9100']
+    relabel_configs:
+      - source_labels: [__address__]
+        action: replace
+        regex: '.*primary.*'
+        target_label: instance
+        replacement: 'k8s-P1'
+      - source_labels: [__address__]
+        action: replace
+        regex: '.*worker2.*'
+        target_label: instance
+        replacement: 'k8s-W2' 
+      - source_labels: [__address__]
+        action: replace
+        regex: '.*router.*'
+        target_label: instance
+        replacement: 'Router'
+  - job_name: ups
+    scrape_interval: 10s
+    metrics_path: /ups_metrics
+    static_configs:
+      - targets: ['ups.home:9199']
+        labels:
+          instance:  "ups"
+  - job_name: 'kubelet'
+    kubernetes_sd_configs:
+    - role: node
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: true
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+  - job_name: 'cadvisor'
+    kubernetes_sd_configs:
+    - role: node
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: true
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    metrics_path: /metrics/cadvisor
+  - job_name: 'k8apiserver'
+    kubernetes_sd_configs:
+    - role: endpoints
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: true
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+  - job_name: 'k8services'
+    kubernetes_sd_configs:
+    - role: endpoints
+    scheme: http
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: true
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_endpoint_port_name]
+        regex: metrics
+        action: keep
+      - source_labels: [__meta_kubernetes_service_name]
+        target_label: kube_service
+  - job_name: 'k8spods2'
+    kubernetes_sd_configs:
+    - role: pod
+    scheme: http
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: true
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_container_port_name]
+        regex: metrics
+        action: keep
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        target_label: pod_name
+      - source_labels: [__meta_kubernetes_pod_ready]
+        regex: true
+        action: replace
+        target_label: pod_ready
+        replacement: 1
+      - source_labels: [__meta_kubernetes_pod_ready]
+        regex: false
+        action: replace
+        target_label: pod_ready
+        replacement: 0
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        target_label: pod_node
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: pod_namespace
