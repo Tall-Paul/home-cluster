@@ -1,7 +1,7 @@
 scrape_configs:
   - job_name: 'snmp_hp_procurve'
     scrape_interval: 120s
-    scrape_timeout: 30s
+    scrape_timeout: 60s
     static_configs:
       - targets: ['snmp-exporter']
         labels:
@@ -18,13 +18,18 @@ scrape_configs:
   - job_name: 'node'
     scrape_interval: 10s
     static_configs:
-      - targets: ['k8s-primary.home:9100','k8s-worker2.home:9100','router.home:9100']
+      - targets: ['k8s-primary.home:9100','k8s-worker1.home:9100','k8s-worker2.home:9100','router.home:9100']
     relabel_configs:
       - source_labels: [__address__]
         action: replace
         regex: '.*primary.*'
         target_label: instance
         replacement: 'k8s-P1'
+      - source_labels: [__address__]
+        action: replace
+        regex: '.*worker1.*'
+        target_label: instance
+        replacement: 'k8s-W1'
       - source_labels: [__address__]
         action: replace
         regex: '.*worker2.*'
