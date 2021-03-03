@@ -28,9 +28,9 @@ check_for_updates() {
               echo $RUNNINGDIR/$GIT_FILE_RELATIVE           
               if [ $PODSTOPPED = 0 ]; then
 		echo "Stopping $PODNAME"
-		kubectl delete -f $PODROOTDIR/$PODNAME/app.yaml
-                if [ -f $PODROOTDIR/$PODNAME/secrets.yaml ]; then
-                  kubectl delete -f $PODROOTDIR/$PODNAME/secrets.yaml
+		kubectl delete -f $RUNNINGROOTDIR/$PODNAME/app.yaml
+                if [ -f $RUNNINGROOTDIR/$PODNAME/secrets.yaml ]; then
+                  kubectl delete -f $RUNNINGROOTDIR/$PODNAME/secrets.yaml
 		fi
                 PODSTOPPED=1
 	      fi
