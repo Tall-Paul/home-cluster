@@ -1,0 +1,196 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tall-paul-co-uk
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: glusterfs-cluster
+  namespace: tall-paul-co-uk
+subsets:
+- addresses:
+  - ip: 192.168.100.250
+  ports:
+  - port: 1
+- addresses:
+  - ip: 192.168.100.252
+  ports:
+  - port: 1
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: tall-paul-co-uk-wordpress
+  namespace: tall-paul-co-uk
+  labels:
+    app: tall-paul-co-uk-wordpress
+spec:
+  containers:
+    - name: wordpress
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+      image: wordpress
+      env:
+        - name: WORDPRESS_DB_HOST
+          value: "tall-paul-co-uk-wordpress"
+        - name: WORDPRESS_DB_USER          
+          value: "wordpress"
+        - name: WORDPRESS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: tall-paul-co-uk
+              key: mysql-user-password
+        - name: WORDPRESS_DB_NAME
+          value: "wordpress"
+      ports:
+        - name: web
+          containerPort: 80
+        - name: secure
+          containerPort: 443
+      volumeMounts:
+        - name: wordpress
+          mountPath: /var/www/html  
+    - name: mysql
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+      image: mysql:8.0.23
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: tall-paul-co-uk
+              key: mysql-root-password
+        - name: MYSQL_USER
+          value: "wordpress"
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: tall-paul-co-uk
+              key: mysql-user-password
+        - name: MYSQL_DATABASE
+          value: "wordpress"
+      ports:
+        - name: db
+          containerPort: 3306
+      volumeMounts:
+        - name: mysql
+          mountPath: /var/lib/mysql
+    - name: dynamic-dns
+      imagePullPolicy: IfNotPresent
+      image: oznu/cloudflare-ddns
+      env:
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: tall-paul-co-uk
+              key: cloudflare-api-key
+        - name: ZONE
+          valueFrom:
+            secretKeyRef:
+              name: tall-paul-co-uk
+              key: cloudflare-dns-zone
+        - name: PROXIED
+          value: "true"
+    - name: cache
+      imagePullPolicy: IfNotPresent
+      image: redis
+      ports:
+        - name: redis
+          containerPort: 6379
+    - name: metrics
+      imagePullPolicy: IfNotPresent
+      image: quay.io/prometheus/node-exporter:latest
+      ports: 
+        - name: metrics
+          containerPort: 9100 
+  dnsPolicy: "None"
+  dnsConfig:
+    nameservers:
+      - 10.96.0.10
+  volumes:
+    - name: wordpress
+      glusterfs:
+        endpoints: glusterfs-cluster
+        path: data/tall-paul-co-uk/http
+        readOnly: false        
+    - name: mysql
+      glusterfs:
+        endpoints: glusterfs-cluster
+        path: data/tall-paul-co-uk/mysql
+        readOnly: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tall-paul-co-uk-wordpress
+  namespace: tall-paul-co-uk
+spec:
+  type: ClusterIP
+  selector:
+    app: tall-paul-co-uk-wordpress
+  ports:
+    - protocol: TCP
+      port: 80
+      name: web
+      targetPort: 80
+    - protocol: TCP
+      port: 443
+      name: secure
+      targetPort: 443
+    - protocol: TCP
+      port: 3306
+      name: mysql
+      targetPort: 3306
+    - protocol: TCP
+      port: 6379
+      name: redis
+      targetPort: 6379
+    - protocol: TCP
+      port: 9100
+      name: metrics
+      targetPort: 9100
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tall-paul-ingress
+  namespace: tall-paul-co-uk
+  annotations:
+    kubernetes.io/ingress.class: kong
+spec:
+  rules:
+  - host: www.tall-paul.co.uk
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: tall-paul-co-uk-wordpress
+            port:
+              number: 80
+  - host: tall-paul.co.uk
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: tall-paul-co-uk-wordpress
+            port:
+              number: 80
+  - host: tall-paul.home
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: tall-paul-co-uk-wordpress
+            port:
+              number: 80

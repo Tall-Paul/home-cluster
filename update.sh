@@ -29,6 +29,9 @@ check_for_updates() {
               if [ $PODSTOPPED = 0 ]; then
 		echo "Stopping $PODNAME"
 		kubectl delete -f $PODROOTDIR/$PODNAME/app.yaml
+                if [ -f $PODROOTDIR/$PODNAME/secrets.yaml ]; then
+                  kubectl delete -f $PODROOTDIR/$PODNAME/secrets.yaml
+		fi
                 PODSTOPPED=1
 	      fi
 	      echo "Updating $GIT_FILE_RELATIVE"
@@ -62,6 +65,9 @@ for f in $PODROOTDIR/*; do
         check_for_updates $f $(realpath --relative-to=$PODROOTDIR $f)
         echo
         if [ $PODSTOPPED = 1 ]; then
+           if [ -f $f/secrets.yaml ]; then
+              kubectl apply -f $f/secrets.yaml
+           fi
 	   echo "Restarting $(realpath --relative-to=$PODROOTDIR $f)"
 	   kubectl apply -f $f/app.yaml
 	else
