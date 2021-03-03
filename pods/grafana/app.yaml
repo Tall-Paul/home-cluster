@@ -1,0 +1,105 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: grafana-container
+
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: grafana
+  labels:
+    app: grafana
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      serviceAccountName: grafana-container
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - grafana
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: grafana
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          imagePullPolicy: IfNotPresent
+          image: grafana/grafana:latest
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+          ports:
+            - name: 
+              containerPort: 3000
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/grafana
+        - name: metrics
+          imagePullPolicy: IfNotPresent
+          image: quay.io/prometheus/node-exporter:latest
+          ports:
+            - name: metrics
+              containerPort: 9100
+      volumes:
+        - name: data
+          glusterfs:
+            endpoints: glusterfs-cluster
+            path: data/grafana
+            readOnly: false
+      dnsPolicy: "ClusterFirst"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+spec:
+  type: ClusterIP
+  selector:
+    app: grafana
+  ports:
+    - protocol: TCP
+      port: 3000
+      name: secure
+      targetPort: 3000
+    - protocol: TCP
+      port: 9100
+      name: metrics
+      targetPort: 9100
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: kong
+spec:
+  rules:
+  - host: grafana.home
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana
+            port:
+              number: 3000
