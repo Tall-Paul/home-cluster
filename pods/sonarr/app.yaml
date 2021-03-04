@@ -1,0 +1,124 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sonarr-container
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: sonarr
+  labels:
+    app: sonarr
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sonarr
+  template:
+    metadata:
+      labels:
+        app: sonarr
+    spec:
+      serviceAccountName: sonarr-container
+      containers:
+        - name: sonarr
+          #securityContext:
+          #  runAsUser: 1000
+          #  runAsGroup: 1000
+            #privileged: true
+            #capabilities:
+            #  add:
+            #    - NET_ADMIN
+          imagePullPolicy: IfNotPresent
+          image: hotio/sonarr
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+          ports:
+            - name: web
+              containerPort: 8989
+          volumeMounts:
+            - name: media-downloads
+              mountPath: /downloads
+            - name: tv
+              mountPath: /tv
+            - name: config
+              mountPath: /config
+        - name: metrics
+          imagePullPolicy: IfNotPresent
+          image: quay.io/prometheus/node-exporter:latest
+          ports:
+            - name: metrics
+              containerPort: 9100
+      volumes:
+        - name: config
+          glusterfs:
+            endpoints: glusterfs-cluster
+            path: data/sonarr
+            readOnly: false
+        - name: media-downloads
+          flexVolume:
+            driver: "fstab/cifs"
+            fsType: "cifs"
+            options:
+              guest: "true"
+              networkPath: "//192.168.100.250/Main/downloads"
+              mountOptions: "rw,vers=3.0,guest,user=nobody,uid=1000,gid=1000,nolock"
+            readOnly: false
+        - name: tv
+          flexVolume:
+            driver: "fstab/cifs"
+            fsType: "cifs"
+            options:
+              guest: "true"
+              networkPath: "//192.168.100.250/Main/TV"
+              mountOptions: "rw,vers=3.0,guest,user=nobody,uid=1000,gid=1000,nolock"
+            readOnly: false
+      dnsPolicy: "ClusterFirst"
+      #dnsConfig:
+      #  nameservers:
+      #    - 192.168.100.254
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarr
+spec:
+  type: ClusterIP
+  selector:
+    app: sonarr
+  ports:
+    - protocol: TCP
+      port: 8989
+      name: web
+      targetPort: 8989
+    - protocol: TCP
+      port: 9100
+      name: metrics
+      targetPort: 9100
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sonarr-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: kong
+spec:
+  rules:
+  - host: sonarr.home
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sonarr
+            port:
+              number: 8989
