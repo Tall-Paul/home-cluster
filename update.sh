@@ -4,7 +4,7 @@
 RUNNINGROOTDIR=/mnt/data
 ROOTDIR=$(pwd)
 PODROOTDIR=$ROOTDIR/pods
-PODSTOPPED=0
+UPDATEREQUIRED=0
 
 check_for_updates() {
     PODNAME=$2	
@@ -15,8 +15,10 @@ check_for_updates() {
         elif [ -f "$i" ]; then	    
             GIT_FILE_ABSOLUTE=$i
             GIT_FILE_RELATIVE=$(realpath --relative-to=$PODROOTDIR $i)
+
             RUNNINGFILE=$RUNNINGROOTDIR/$GIT_FILE_RELATIVE
             RUNNINGDIR=$RUNNINGROOTDIR/$RELATIVEDIR
+
             mkdir -p $RUNNINGDIR
 	    if [ ! -f $RUNNINGFILE ]; then
               touch $RUNNINGFILE
@@ -26,15 +28,10 @@ check_for_updates() {
             else   
               echo $GIT_FILE_ABSOLUTE
               echo $RUNNINGDIR/$GIT_FILE_RELATIVE           
-              if [ $PODSTOPPED = 0 ]; then
-		echo "Stopping $PODNAME"
-		kubectl delete -f $RUNNINGROOTDIR/$PODNAME/app.yaml
-                if [ -f $RUNNINGROOTDIR/$PODNAME/secrets.yaml ]; then
-                  kubectl delete -f $RUNNINGROOTDIR/$PODNAME/secrets.yaml
-		fi
-                PODSTOPPED=1
-	      fi
-	      echo "Updating $GIT_FILE_RELATIVE"
+              if [ $UPDATEREQUIRED = 0 ]; then
+                UPDATEREQUIRED=1
+              fi
+	          echo "Updating $GIT_FILE_RELATIVE"
               cp -f $GIT_FILE_ABSOLUTE $RUNNINGFILE
             fi
         fi
@@ -61,17 +58,23 @@ fi
 
 for f in $PODROOTDIR/*; do
     if [ -d "$f" ]; then
-        PODSTOPPED=0
-        check_for_updates $f $(realpath --relative-to=$PODROOTDIR $f)
+        PODNAME=$(realpath --relative-to=$PODROOTDIR $f)
+        UPDATEREQUIRED=0
+        cp -f $RUNNINGDIR/app.yaml $RUNNINGDIR/app-bak.yaml
+        check_for_updates $f $PODNAME
         echo
-        if [ $PODSTOPPED = 1 ]; then
-           if [ -f $f/secrets.yaml ]; then
-              kubectl apply -f $f/secrets.yaml
-           fi
-	   echo "Restarting $(realpath --relative-to=$PODROOTDIR $f)"
-	   kubectl apply -f $f/app.yaml
-	else
-	  echo "$(realpath --relative-to=$PODROOTDIR $f) Up to Date"
+        if [ $UPDATEREQUIRED = 1 ]; then
+          if [ -f $f/secrets.yaml ]; then
+            kubectl delete -f $f/secrets.yaml            
+          fi
+          kubectl rollout restart deployment/$PODNAME
+          if [ $? != 0 ]; then   
+             kubectl delete -f $RUNNINGDIR/app-bak.yaml   
+             kubectl apply -f $RUNNINGDIR/app.yaml
+             kubectl apply -f $f/secrets.yaml      
+          fi
+	    else
+	        echo "$PODNAME Up to Date"
         fi
     fi
 done
