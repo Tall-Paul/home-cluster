@@ -56,23 +56,127 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Node"
+              "options": "CPU"
             },
             "properties": [
               {
-                "id": "custom.displayMode"
+                "id": "custom.align",
+                "value": "right"
+              },
+              {
+                "id": "custom.width",
+                "value": 96
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "CPU"
+              "options": "Speed"
             },
             "properties": [
               {
                 "id": "custom.align",
-                "value": "left"
+                "value": "right"
+              },
+              {
+                "id": "unit",
+                "value": "hertz"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "rgba(244, 241, 241, 0)",
+                      "value": null
+                    },
+                    {
+                      "color": "green",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "noValue"
+              },
+              {
+                "id": "custom.width",
+                "value": 119
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Ambient"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "celsius"
+              },
+              {
+                "id": "custom.width",
+                "value": 97
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "rgba(115, 191, 105, 0)",
+                      "value": null
+                    },
+                    {
+                      "color": "green",
+                      "value": 1
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 35
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Core"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "celsius"
+              },
+              {
+                "id": "custom.width",
+                "value": 98
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "rgba(115, 191, 105, 0)",
+                      "value": null
+                    },
+                    {
+                      "color": "green",
+                      "value": 1
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 60
+                    }
+                  ]
+                }
               }
             ]
           },
@@ -83,77 +187,189 @@
             },
             "properties": [
               {
-                "id": "custom.align",
-                "value": "left"
+                "id": "custom.width",
+                "value": 93
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "instance"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 115
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "instance"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "auto"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "RAM"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "rgba(0, 0, 0, 0)",
+                      "value": null
+                    },
+                    {
+                      "color": "green",
+                      "value": 1
+                    },
+                    {
+                      "color": "#EAB839",
+                      "value": 70
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "In"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "Bps"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Out"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "Bps"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                }
               }
             ]
           }
         ]
       },
       "gridPos": {
-        "h": 5,
-        "w": 10,
+        "h": 6,
+        "w": 24,
         "x": 0,
         "y": 0
       },
-      "id": 87,
+      "id": 99,
       "links": [],
       "options": {
+        "frameIndex": 0,
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "7.4.0",
+      "pluginVersion": "7.4.3",
       "targets": [
         {
-          "expr": "((node_memory_MemTotal_bytes{instance=\"k8s-P1\",job=\"node\"} - node_memory_MemAvailable_bytes{instance=\"k8s-P1\",job=\"node\"}) / (node_memory_MemTotal_bytes{instance=\"k8s-P1\",job=\"node\"} )) * 100",
-          "format": "time_series",
+          "expr": "((avg by (instance) (node_memory_MemTotal_bytes{job=\"node\"}) - avg by (instance) (node_memory_MemAvailable_bytes{job=\"node\"})) / (avg by (instance) (node_memory_MemTotal_bytes{job=\"node\"}) )) * 100",
+          "format": "table",
           "hide": false,
-          "instant": true,
           "interval": "",
-          "legendFormat": "Primary",
-          "refId": "C"
+          "legendFormat": "RAM",
+          "refId": "A"
         },
         {
-          "expr": "((sum(irate(node_cpu_seconds_total{instance=\"k8s-P1\",job=\"node\"}[5m]) * 100) - sum(irate(node_cpu_seconds_total{mode=\"idle\", instance=\"k8s-P1\",job=\"node\"}[5m]) * 100)) / sum(irate(node_cpu_seconds_total{instance=\"k8s-P1\",job=\"node\"}[5m]) * 100)) * 100",
-          "format": "time_series",
-          "instant": true,
+          "expr": "avg by (instance) (node_cpu_scaling_frequency_hertz{job=\"node\"})",
+          "format": "table",
+          "hide": false,
+          "instant": false,
           "interval": "",
-          "intervalFactor": 2,
-          "legendFormat": "Primary",
-          "refId": "A",
-          "step": 20
+          "legendFormat": "GHz",
+          "refId": "I"
         },
         {
-          "expr": "((node_memory_MemTotal_bytes{instance=\"k8s-W2\",job=\"node\"} - node_memory_MemAvailable_bytes{instance=\"k8s-W2\",job=\"node\"}) / (node_memory_MemTotal_bytes{instance=\"k8s-W2\",job=\"node\"} )) * 100",
-          "format": "time_series",
+          "expr": "((sum by (instance) (irate(node_cpu_seconds_total{job=\"node\"}[5m]) * 100) - sum by (instance) (irate(node_cpu_seconds_total{mode=\"idle\", job=\"node\"}[5m]) * 100)) / sum by (instance) (irate(node_cpu_seconds_total{job=\"node\"}[5m]) * 100)) * 100",
+          "format": "table",
           "hide": false,
-          "instant": true,
           "interval": "",
-          "legendFormat": "Worker",
-          "refId": "D"
-        },
-        {
-          "expr": "((sum(irate(node_cpu_seconds_total{instance=\"k8s-W2\",job=\"node\"}[5m]) * 100) - sum(irate(node_cpu_seconds_total{mode=\"idle\", instance=\"k8s-W2\",job=\"node\"}[5m]) * 100)) / sum(irate(node_cpu_seconds_total{instance=\"k8s-W2\",job=\"node\"}[5m]) * 100)) * 100",
-          "format": "time_series",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "Worker",
+          "legendFormat": "CPU",
           "refId": "B"
         },
         {
-          "expr": "((sum(irate(node_cpu_seconds_total{instance=\"Router\",job=\"node\"}[5m]) * 100) - sum(irate(node_cpu_seconds_total{mode=\"idle\", instance=\"Router\",job=\"node\"}[5m]) * 100)) / sum(irate(node_cpu_seconds_total{instance=\"Router\",job=\"node\"}[5m]) * 100)) * 100",
-          "format": "time_series",
+          "expr": "avg by (instance) (node_ipmi_temperature_celsius{sensor=\"Temp 1\"})",
+          "format": "table",
           "hide": false,
-          "instant": true,
           "interval": "",
-          "legendFormat": "Router",
+          "legendFormat": "Ambient",
+          "refId": "C"
+        },
+        {
+          "expr": "avg by (instance) (node_hwmon_temp_celsius{sensor=\"temp3\",job=\"node\"})",
+          "format": "table",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Core",
+          "refId": "D"
+        },
+        {
+          "expr": "avg by (instance) (irate(node_network_receive_bytes_total{device=\"main\"}[5m]))",
+          "format": "table",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "In",
           "refId": "E"
+        },
+        {
+          "expr": "avg by (instance) (irate(node_network_transmit_bytes_total{device=\"main\"}[5m]))",
+          "format": "table",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Out",
+          "refId": "G"
         },
         {
           "expr": "((node_memory_size_bytes{instance=\"Router\",job=\"node\"} - node_memory_inactive_bytes{instance=\"Router\",job=\"node\"}) / (node_memory_size_bytes{instance=\"Router\",job=\"node\"} )) * 100",
           "format": "time_series",
-          "hide": false,
+          "hide": true,
           "instant": true,
           "interval": "",
           "legendFormat": "Router",
@@ -165,43 +381,22 @@
       "title": "",
       "transformations": [
         {
-          "id": "labelsToFields",
-          "options": {
-            "valueLabel": "job"
-          }
-        },
-        {
-          "id": "sortBy",
-          "options": {
-            "fields": {},
-            "sort": [
-              {
-                "field": "instance"
-              }
-            ]
-          }
+          "id": "merge",
+          "options": {}
         },
         {
           "id": "groupBy",
           "options": {
             "fields": {
-              "Metric": {
-                "aggregations": [],
-                "operation": "groupby"
-              },
-              "Primary": {
-                "aggregations": [],
-                "operation": null
+              "CPU": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
               },
               "Time": {
                 "aggregations": [],
                 "operation": null
-              },
-              "Value": {
-                "aggregations": [
-                  "last"
-                ],
-                "operation": "aggregate"
               },
               "Value #A": {
                 "aggregations": [
@@ -221,11 +416,31 @@
                 ],
                 "operation": "aggregate"
               },
-              "instance": {
-                "aggregations": [],
-                "operation": "groupby"
+              "Value #D": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
               },
-              "node": {
+              "Value #E": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #G": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #I": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "instance": {
                 "aggregations": [],
                 "operation": "groupby"
               }
@@ -235,766 +450,21 @@
         {
           "id": "organize",
           "options": {
-            "excludeByName": {
-              "instance": false
-            },
+            "excludeByName": {},
             "indexByName": {
-              "Value (last)": 1,
-              "instance": 0,
-              "node": 2
+              "Value #A (lastNotNull)": 3,
+              "Value #B (lastNotNull)": 1,
+              "Value #I (lastNotNull)": 2,
+              "instance": 0
             },
             "renameByName": {
-              "Value (last)": "CPU",
-              "Value (lastNotNull)": "CPU",
-              "instance": "Node",
-              "node": "RAM"
-            }
-          }
-        }
-      ],
-      "transparent": true,
-      "type": "table"
-    },
-    {
-      "datasource": "Prometheus",
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": null,
-            "displayMode": "color-background",
-            "filterable": false
-          },
-          "links": [],
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Node"
-            },
-            "properties": [
-              {
-                "id": "custom.displayMode"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "CPU"
-            },
-            "properties": [
-              {
-                "id": "custom.align",
-                "value": "left"
-              },
-              {
-                "id": "unit",
-                "value": "celsius"
-              },
-              {
-                "id": "max",
-                "value": 80
-              },
-              {
-                "id": "min",
-                "value": 0
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": null
-                    },
-                    {
-                      "color": "yellow",
-                      "value": 60
-                    },
-                    {
-                      "color": "red",
-                      "value": 80
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Ambient"
-            },
-            "properties": [
-              {
-                "id": "custom.align",
-                "value": "left"
-              },
-              {
-                "id": "unit",
-                "value": "celsius"
-              },
-              {
-                "id": "max",
-                "value": 40
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": null
-                    },
-                    {
-                      "color": "red",
-                      "value": 30
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "min",
-                "value": 0
-              },
-              {
-                "id": "custom.width",
-                "value": null
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 10,
-        "y": 0
-      },
-      "id": 91,
-      "links": [],
-      "options": {
-        "showHeader": true,
-        "sortBy": []
-      },
-      "pluginVersion": "7.4.0",
-      "targets": [
-        {
-          "expr": "node_ipmi_temperature_celsius{instance=\"k8s-P1\",sensor=\"Temp 1\"}",
-          "format": "time_series",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "Primary",
-          "refId": "C"
-        },
-        {
-          "expr": "avg(node_hwmon_temp_celsius{instance=\"k8s-P1\",job=\"node\",sensor=\"temp3\"})",
-          "format": "time_series",
-          "instant": true,
-          "interval": "",
-          "intervalFactor": 2,
-          "legendFormat": "Primary",
-          "refId": "A",
-          "step": 20
-        },
-        {
-          "expr": "node_ipmi_temperature_celsius{instance=\"k8s-W2\",sensor=\"Temp 1\"}",
-          "format": "time_series",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "Worker",
-          "refId": "D"
-        },
-        {
-          "expr": "avg(node_hwmon_temp_celsius{instance=\"k8s-W2\",job=\"node\",sensor=\"temp3\"})",
-          "format": "time_series",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "Worker",
-          "refId": "B"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "",
-      "transformations": [
-        {
-          "id": "labelsToFields",
-          "options": {
-            "valueLabel": "job"
-          }
-        },
-        {
-          "id": "sortBy",
-          "options": {
-            "fields": {},
-            "sort": [
-              {
-                "field": "instance"
-              }
-            ]
-          }
-        },
-        {
-          "id": "groupBy",
-          "options": {
-            "fields": {
-              "Metric": {
-                "aggregations": [],
-                "operation": "groupby"
-              },
-              "Primary": {
-                "aggregations": [],
-                "operation": null
-              },
-              "Time": {
-                "aggregations": [],
-                "operation": null
-              },
-              "Value": {
-                "aggregations": [
-                  "last"
-                ],
-                "operation": "aggregate"
-              },
-              "Value #A": {
-                "aggregations": [
-                  "lastNotNull"
-                ],
-                "operation": "aggregate"
-              },
-              "Value #B": {
-                "aggregations": [
-                  "lastNotNull"
-                ],
-                "operation": "aggregate"
-              },
-              "Value #C": {
-                "aggregations": [
-                  "lastNotNull"
-                ],
-                "operation": "aggregate"
-              },
-              "instance": {
-                "aggregations": [],
-                "operation": "groupby"
-              },
-              "node": {
-                "aggregations": [],
-                "operation": "groupby"
-              }
-            }
-          }
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "instance": true
-            },
-            "indexByName": {
-              "Value (last)": 2,
-              "instance": 0,
-              "node": 1
-            },
-            "renameByName": {
-              "Value (last)": "CPU",
-              "Value (lastNotNull)": "CPU",
-              "instance": "Node",
-              "node": "Ambient"
-            }
-          }
-        }
-      ],
-      "transparent": true,
-      "type": "table"
-    },
-    {
-      "datasource": "Prometheus",
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": null,
-            "displayMode": "color-background",
-            "filterable": false
-          },
-          "links": [],
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1000000
-              }
-            ]
-          },
-          "unit": "Bps"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Node"
-            },
-            "properties": [
-              {
-                "id": "custom.displayMode"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "CPU"
-            },
-            "properties": [
-              {
-                "id": "custom.align",
-                "value": "left"
-              },
-              {
-                "id": "unit",
-                "value": "celsius"
-              },
-              {
-                "id": "max",
-                "value": 80
-              },
-              {
-                "id": "min",
-                "value": 0
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": null
-                    },
-                    {
-                      "color": "yellow",
-                      "value": 60
-                    },
-                    {
-                      "color": "red",
-                      "value": 80
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Ambient"
-            },
-            "properties": [
-              {
-                "id": "custom.align",
-                "value": "left"
-              },
-              {
-                "id": "unit",
-                "value": "celsius"
-              },
-              {
-                "id": "max",
-                "value": 40
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": null
-                    },
-                    {
-                      "color": "red",
-                      "value": 30
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "min",
-                "value": 0
-              },
-              {
-                "id": "custom.width",
-                "value": null
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 16,
-        "y": 0
-      },
-      "id": 93,
-      "links": [],
-      "options": {
-        "showHeader": true,
-        "sortBy": []
-      },
-      "pluginVersion": "7.4.0",
-      "targets": [
-        {
-          "expr": "irate(node_network_receive_bytes_total{instance=\"k8s-P1\",job=\"node\",device=\"enp3s0f0\"}[30s])",
-          "format": "time_series",
-          "instant": true,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "Primary",
-          "refId": "A",
-          "step": 20
-        },
-        {
-          "expr": "irate(node_network_receive_bytes_total{instance=\"k8s-W2\",job=\"node\",device=\"enp3s0f0\"}[30s])",
-          "format": "time_series",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "Worker",
-          "refId": "B",
-          "step": 20
-        },
-        {
-          "expr": "irate(node_network_receive_bytes_total{instance=\"Router\",job=\"node\",device=\"em0\"}[30s])",
-          "format": "time_series",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "Worker",
-          "refId": "C",
-          "step": 20
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "",
-      "transformations": [
-        {
-          "id": "labelsToFields",
-          "options": {
-            "valueLabel": "job"
-          }
-        },
-        {
-          "id": "groupBy",
-          "options": {
-            "fields": {
-              "device": {
-                "aggregations": [
-                  "last"
-                ],
-                "operation": null
-              },
-              "instance": {
-                "aggregations": [],
-                "operation": "groupby"
-              },
-              "node": {
-                "aggregations": [
-                  "last"
-                ],
-                "operation": "aggregate"
-              }
-            }
-          }
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "Value #A": false,
-              "device": true,
-              "instance": true,
-              "job": true
-            },
-            "indexByName": {},
-            "renameByName": {
-              "Value #A (lastNotNull)": "Out",
-              "Value #C (lastNotNull)": "In",
-              "node (last)": "In"
-            }
-          }
-        }
-      ],
-      "transparent": true,
-      "type": "table"
-    },
-    {
-      "datasource": "Prometheus",
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": null,
-            "displayMode": "color-background",
-            "filterable": false
-          },
-          "links": [],
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1000000
-              }
-            ]
-          },
-          "unit": "Bps"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Node"
-            },
-            "properties": [
-              {
-                "id": "custom.displayMode"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "CPU"
-            },
-            "properties": [
-              {
-                "id": "custom.align",
-                "value": "left"
-              },
-              {
-                "id": "unit",
-                "value": "celsius"
-              },
-              {
-                "id": "max",
-                "value": 80
-              },
-              {
-                "id": "min",
-                "value": 0
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": null
-                    },
-                    {
-                      "color": "yellow",
-                      "value": 60
-                    },
-                    {
-                      "color": "red",
-                      "value": 80
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Ambient"
-            },
-            "properties": [
-              {
-                "id": "custom.align",
-                "value": "left"
-              },
-              {
-                "id": "unit",
-                "value": "celsius"
-              },
-              {
-                "id": "max",
-                "value": 40
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": null
-                    },
-                    {
-                      "color": "red",
-                      "value": 30
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "min",
-                "value": 0
-              },
-              {
-                "id": "custom.width",
-                "value": null
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 20,
-        "y": 0
-      },
-      "id": 92,
-      "links": [],
-      "options": {
-        "showHeader": true,
-        "sortBy": []
-      },
-      "pluginVersion": "7.4.0",
-      "targets": [
-        {
-          "expr": "irate(node_network_transmit_bytes_total{instance=\"k8s-P1\",job=\"node\",device=\"enp3s0f0\"}[30s])",
-          "format": "time_series",
-          "instant": true,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "Primary",
-          "refId": "A",
-          "step": 20
-        },
-        {
-          "expr": "irate(node_network_transmit_bytes_total{instance=\"k8s-W2\",job=\"node\",device=\"enp3s0f0\"}[30s])",
-          "format": "time_series",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "Worker",
-          "refId": "B",
-          "step": 20
-        },
-        {
-          "expr": "irate(node_network_transmit_bytes_total{instance=\"Router\",job=\"node\",device=\"em0\"}[30s])",
-          "format": "time_series",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "Worker",
-          "refId": "C",
-          "step": 20
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "",
-      "transformations": [
-        {
-          "id": "labelsToFields",
-          "options": {
-            "valueLabel": "job"
-          }
-        },
-        {
-          "id": "groupBy",
-          "options": {
-            "fields": {
-              "device": {
-                "aggregations": [
-                  "last"
-                ],
-                "operation": null
-              },
-              "instance": {
-                "aggregations": [],
-                "operation": "groupby"
-              },
-              "node": {
-                "aggregations": [
-                  "last"
-                ],
-                "operation": "aggregate"
-              }
-            }
-          }
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "Value #A": false,
-              "device": true,
-              "instance": true,
-              "job": true
-            },
-            "indexByName": {},
-            "renameByName": {
-              "Value #A (lastNotNull)": "Out",
-              "Value #C (lastNotNull)": "In",
-              "node (last)": "Out"
+              "Value #A (lastNotNull)": "RAM",
+              "Value #B (lastNotNull)": "CPU",
+              "Value #C (lastNotNull)": "Ambient",
+              "Value #D (lastNotNull)": "Core",
+              "Value #E (lastNotNull)": "In",
+              "Value #G (lastNotNull)": "Out",
+              "Value #I (lastNotNull)": "Speed"
             }
           }
         }
@@ -1126,7 +596,7 @@
         "h": 6,
         "w": 4,
         "x": 0,
-        "y": 5
+        "y": 6
       },
       "id": 84,
       "options": {
@@ -1144,7 +614,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.0",
+      "pluginVersion": "7.4.3",
       "targets": [
         {
           "expr": "network_ups_tools_ups_power",
@@ -1307,7 +777,7 @@
         "h": 6,
         "w": 4,
         "x": 4,
-        "y": 5
+        "y": 6
       },
       "id": 96,
       "options": {
@@ -1325,7 +795,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.0",
+      "pluginVersion": "7.4.3",
       "targets": [
         {
           "expr": "network_ups_tools_ups_power",
@@ -1394,7 +864,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Status"
+              "options": "!"
             },
             "properties": [
               {
@@ -1425,6 +895,66 @@
               {
                 "id": "custom.align",
                 "value": "center"
+              },
+              {
+                "id": "custom.width",
+                "value": 35
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "In"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "Bps"
+              },
+              {
+                "id": "custom.width",
+                "value": 82
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Out"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "Bps"
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pod_name"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 117
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Name"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 113
               }
             ]
           }
@@ -1434,51 +964,111 @@
         "h": 12,
         "w": 9,
         "x": 8,
-        "y": 5
+        "y": 6
       },
       "id": 98,
       "maxDataPoints": null,
       "options": {
-        "showHeader": true
+        "showHeader": true,
+        "sortBy": []
       },
-      "pluginVersion": "7.4.0",
+      "pluginVersion": "7.4.3",
       "targets": [
         {
-          "expr": "node_boot_time_seconds{job=\"k8spods2\"}  ",
-          "format": "time_series",
-          "instant": true,
+          "expr": "irate(node_network_receive_bytes_total{job=\"k8spods2\",device=\"eth0\"}[5m])",
+          "format": "table",
+          "hide": false,
+          "instant": false,
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "In",
           "refId": "A"
+        },
+        {
+          "expr": "irate(node_network_transmit_bytes_total{job=\"k8spods2\",device=\"eth0\"}[5m])",
+          "format": "table",
+          "hide": false,
+          "instant": false,
+          "interval": "",
+          "legendFormat": "Out",
+          "refId": "B"
         }
       ],
       "title": "Pods",
       "transformations": [
         {
-          "id": "labelsToFields",
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "groupBy",
           "options": {
-            "valueLabel": "job"
+            "fields": {
+              "Value": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #A": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #B": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "pod_name": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "pod_ready": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              }
+            }
           }
         },
         {
           "id": "organize",
           "options": {
-            "excludeByName": {
-              "Time": true,
-              "instance": true,
-              "k8pods": true,
-              "k8spods": true,
-              "k8spods2": true,
-              "pod_namespace": true,
-              "pod_node": true
-            },
+            "excludeByName": {},
             "indexByName": {},
             "renameByName": {
+              "Value #A (lastNotNull)": "In",
+              "Value #B (lastNotNull)": "Out",
               "pod_name": "Name",
-              "pod_namespace": "",
-              "pod_node": "Node",
-              "pod_ready": "Status"
+              "pod_ready (lastNotNull)": "!"
             }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "desc": true,
+                "field": "Out"
+              }
+            ]
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "desc": true,
+                "field": "In"
+              }
+            ]
           }
         }
       ],
@@ -1496,7 +1086,7 @@
         "h": 12,
         "w": 7,
         "x": 17,
-        "y": 5
+        "y": 6
       },
       "id": 90,
       "options": {
@@ -1585,7 +1175,7 @@
         "h": 6,
         "w": 4,
         "x": 0,
-        "y": 11
+        "y": 12
       },
       "id": 80,
       "options": {
@@ -1603,7 +1193,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.0",
+      "pluginVersion": "7.4.3",
       "targets": [
         {
           "expr": "node_filesystem_avail_bytes{mountpoint=\"/Main\"}",
@@ -1696,7 +1286,7 @@
         "h": 6,
         "w": 4,
         "x": 4,
-        "y": 11
+        "y": 12
       },
       "id": 82,
       "options": {
@@ -1714,7 +1304,7 @@
         "text": {},
         "textMode": "value_and_name"
       },
-      "pluginVersion": "7.4.0",
+      "pluginVersion": "7.4.3",
       "targets": [
         {
           "expr": "count(smartmon_device_smart_healthy)",
@@ -1772,7 +1362,7 @@
       "type": "stat"
     }
   ],
-  "refresh": "5s",
+  "refresh": false,
   "schemaVersion": 27,
   "style": "dark",
   "tags": [],
@@ -1800,5 +1390,5 @@
   "timezone": "",
   "title": "Kubernetes Nodes Mobile",
   "uid": "l5pSGZYGz",
-  "version": 51
-
+  "version": 75
+}

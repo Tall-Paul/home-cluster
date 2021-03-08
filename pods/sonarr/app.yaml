@@ -24,13 +24,6 @@ spec:
       serviceAccountName: sonarr-container
       containers:
         - name: sonarr
-          #securityContext:
-          #  runAsUser: 1000
-          #  runAsGroup: 1000
-            #privileged: true
-            #capabilities:
-            #  add:
-            #    - NET_ADMIN
           imagePullPolicy: IfNotPresent
           image: hotio/sonarr
           env:

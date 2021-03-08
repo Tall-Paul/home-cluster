@@ -3,7 +3,7 @@ scrape_configs:
     scrape_interval: 120s
     scrape_timeout: 60s
     static_configs:
-      - targets: ['snmp-exporter']
+      - targets: ['snmp-exporter:9100']
         labels:
           instance: "procurve"
     metrics_path: '/snmp'
@@ -40,6 +40,12 @@ scrape_configs:
         regex: '.*router.*'
         target_label: instance
         replacement: 'Router'
+    metric_relabel_configs:
+      - source_labels: [device]
+        action: replace
+        regex: 'enp3s0f0|em0'
+        target_label: device
+        replacement: 'main'
   - job_name: ups
     scrape_interval: 10s
     metrics_path: /ups_metrics
