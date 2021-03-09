@@ -20,7 +20,7 @@ check_for_updates() {
             RUNNINGDIR=$RUNNINGROOTDIR/$RELATIVEDIR
 
             mkdir -p $RUNNINGDIR
-	    if [ ! -f $RUNNINGFILE ]; then
+	    if [ ! -f "$RUNNINGFILE" ]; then
               touch $RUNNINGFILE
             fi	    
             if cmp -s "$GIT_FILE_ABSOLUTE" "$RUNNINGFILE"; then
@@ -60,11 +60,12 @@ for f in $PODROOTDIR/*; do
     if [ -d "$f" ]; then
         PODNAME=$(realpath --relative-to=$PODROOTDIR $f)
         UPDATEREQUIRED=0
+        RUNNINGDIR=$PODROOTDIR/$PODNAME
         cp -f $RUNNINGDIR/app.yaml $RUNNINGDIR/app-bak.yaml
         check_for_updates $f $PODNAME
         echo
         if [ $UPDATEREQUIRED = 1 ]; then
-          if [ -f $f/secrets.yaml ]; then
+          if [ -f "$f/secrets.yaml" ]; then
             kubectl delete -f $f/secrets.yaml            
           fi
           kubectl rollout restart deployment/$PODNAME
