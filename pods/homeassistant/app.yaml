@@ -37,7 +37,7 @@ spec:
               mountPath: /config
         - name: metrics
           imagePullPolicy: IfNotPresent
-          image: quay.io/prometheus/node-exporter:latest
+          image: quay.io/prometheus/node-exporter
           ports:
             - name: metrics
               containerPort: 9100
@@ -48,6 +48,7 @@ spec:
             path: data/homeassistant/
             readOnly: false
       dnsPolicy: "ClusterFirst"
+
 ---
 apiVersion: v1
 kind: Service
