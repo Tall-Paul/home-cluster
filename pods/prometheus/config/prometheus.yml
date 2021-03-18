@@ -18,8 +18,13 @@ scrape_configs:
   - job_name: 'node'
     scrape_interval: 10s
     static_configs:
-      - targets: ['k8s-primary.home:9100','k8s-worker1.home:9100','k8s-worker2.home:9100','router.home:9100']
+      - targets: ['k8s-primary.home:9100','k8s-worker1.home:9100','k8s-worker2.home:9100','router.home:9100','192.168.100.151.9182']
     relabel_configs:
+      - source_labels: [__address__]
+        action: replace
+        regex: '.*151.*'
+        target_label: instance
+        replacement: 'Laptop'
       - source_labels: [__address__]
         action: replace
         regex: '.*primary.*'
