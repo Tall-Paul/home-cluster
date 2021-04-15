@@ -2,64 +2,49 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: grafana-pdb
+  name: nodered-pdb
 spec:
   minAvailable: 1
   selector:
     matchLabels:
-      app: grafana
+      app: nodered
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: grafana-container
+  name: nodered-container
 
 ---
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: grafana
+  name: nodered
   labels:
-    app: grafana
+    app: nodered
+
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: grafana
+      app: nodered
   template:
     metadata:
       labels:
-        app: grafana
+        app: nodered
     spec:
-      serviceAccountName: grafana-container
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - grafana
-            topologyKey: "kubernetes.io/hostname"
+      serviceAccountName: nodered-container
       containers:
-        - name: grafana
+        - name: nodered
           securityContext:
-            runAsUser: 1000
-            runAsGroup: 1000
+            privileged: true
           imagePullPolicy: IfNotPresent
-          image: grafana/grafana:latest
-          env:
-            - name: PUID
-              value: "1000"
-            - name: PGID
-              value: "1000"
+          image: nodered/node-red
           ports:
-            - name: 
-              containerPort: 3000
+            - name: web
+              containerPort: 1880
           volumeMounts:
-            - name: data
-              mountPath: /var/lib/grafana
+            - name: data     
+              mountPath: /data
         - name: metrics
           imagePullPolicy: IfNotPresent
           image: quay.io/prometheus/node-exporter:latest
@@ -70,7 +55,7 @@ spec:
         - name: data
           glusterfs:
             endpoints: glusterfs-cluster
-            path: data/grafana
+            path: data/nodered/
             readOnly: false
       dnsPolicy: "ClusterFirst"
 
@@ -78,16 +63,16 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: grafana
+  name: nodered
 spec:
   type: ClusterIP
   selector:
-    app: grafana
+    app: nodered
   ports:
     - protocol: TCP
-      port: 3000
-      name: secure
-      targetPort: 3000
+      port: 1880
+      name: web
+      targetPort: 1880
     - protocol: TCP
       port: 9100
       name: metrics
@@ -97,19 +82,19 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: grafana-ingress
+  name: nodered-ingress
   namespace: default
   annotations:
     kubernetes.io/ingress.class: kong
 spec:
   rules:
-  - host: grafana.home
+  - host: nodered.home
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: grafana
+            name: nodered
             port:
-              number: 3000
+              number: 1880

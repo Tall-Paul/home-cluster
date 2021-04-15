@@ -1,76 +1,64 @@
 ---
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: grafana-pdb
-spec:
-  minAvailable: 1
-  selector:
-    matchLabels:
-      app: grafana
----
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: grafana-container
+  name: minecraft-container
 
 ---
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: grafana
+  name: minecraft
   labels:
-    app: grafana
+    app: minecraft
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: grafana
+      app: minecraft
   template:
     metadata:
       labels:
-        app: grafana
+        app: minecraft
     spec:
-      serviceAccountName: grafana-container
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - grafana
-            topologyKey: "kubernetes.io/hostname"
+      serviceAccountName: minecraft-container
+      #affinity:
+      #  podAntiAffinity:
+      #    requiredDuringSchedulingIgnoredDuringExecution:
+      #    - labelSelector:
+      #        matchExpressions:
+      #        - key: app
+      #          operator: In
+      #          values:
+      #          - minecraft
+      #      topologyKey: "kubernetes.io/hostname"
       containers:
-        - name: grafana
+        - name: minecraft
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
           imagePullPolicy: IfNotPresent
-          image: grafana/grafana:latest
+          image: tekgator/docker-mcmyadmin
           env:
             - name: PUID
               value: "1000"
             - name: PGID
               value: "1000"
           ports:
-            - name: 
-              containerPort: 3000
+            - name: web
+              containerPort: 8080
+            - name: server
+              containerPort: 25565
+            - name: dynmap
+              containerPort: 8123
           volumeMounts:
             - name: data
-              mountPath: /var/lib/grafana
-        - name: metrics
-          imagePullPolicy: IfNotPresent
-          image: quay.io/prometheus/node-exporter:latest
-          ports:
-            - name: metrics
-              containerPort: 9100
+              mountPath: /data
       volumes:
         - name: data
           glusterfs:
             endpoints: glusterfs-cluster
-            path: data/grafana
+            path: data/minecraft
             readOnly: false
       dnsPolicy: "ClusterFirst"
 
@@ -78,15 +66,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: grafana
+  name: minecraft
 spec:
   type: ClusterIP
   selector:
-    app: grafana
+    app: minecraft
   ports:
     - protocol: TCP
-      port: 3000
-      name: secure
+      port: 8080
+      name: 
       targetPort: 3000
     - protocol: TCP
       port: 9100
@@ -97,19 +85,19 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: grafana-ingress
+  name: minecraft-ingress
   namespace: default
   annotations:
     kubernetes.io/ingress.class: kong
 spec:
   rules:
-  - host: grafana.home
+  - host: minecraft.home
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: grafana
+            name: minecraft
             port:
               number: 3000
