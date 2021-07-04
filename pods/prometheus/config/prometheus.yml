@@ -22,7 +22,7 @@ scrape_configs:
     relabel_configs:
       - source_labels: [__address__]
         action: replace
-        regex: '.*151.*'
+        regex: '.*171.*'
         target_label: instance
         replacement: 'Laptop'
       - source_labels: [__address__]
