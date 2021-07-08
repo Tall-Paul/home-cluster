@@ -7,9 +7,9 @@ metadata:
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: radarr
+  name: pykms
   labels:
-    app: radarr
+    app: pykms
 
 spec:
   replicas: 1
@@ -32,7 +32,7 @@ spec:
             - name: PGID
               value: "1000"
             - name: SQLITE
-              value: true
+              value: "true"
             - name: HWID
               value: "RANDOM"
           ports:
