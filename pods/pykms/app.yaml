@@ -1,0 +1,72 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pykms-container
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: radarr
+  labels:
+    app: radarr
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pykms
+  template:
+    metadata:
+      labels:
+        app: pykms
+    spec:
+      serviceAccountName: pykms-container
+      containers:
+        - name: radarr
+          imagePullPolicy: IfNotPresent
+          image: ekonprof18/pykms
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: SQLITE
+              value: true
+            - name: HWID
+              value: "RANDOM"
+          ports:
+            - name: web
+              containerPort: 8080
+            - name: kms
+              containerPort: 1688
+        - name: metrics
+          imagePullPolicy: IfNotPresent
+          image: quay.io/prometheus/node-exporter:latest
+          ports:
+            - name: metrics
+              containerPort: 9100
+      dnsPolicy: "ClusterFirst"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pykms-external
+spec:
+  type: LoadBalancer
+  selector:
+    app: pykms
+  ports:
+    - protocol: TCP
+      port: 8080
+      name: web
+      targetPort: 8080
+    - protocol: TCP
+      port: 1688
+      name: kms
+      targetPort: 1688
+    - protocol: TCP
+      port: 9100
+      name: metrics
+      targetPort: 9100
